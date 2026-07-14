@@ -1,0 +1,206 @@
+/* The stylesheet is styling the dashboard, footer, and app layout here. */
+/* ===================================
+   Air Quality Prediction System
+   Global Styles
+=================================== */
+
+body{
+
+    background:#f4f8fb;
+
+    font-family:Arial, Helvetica, sans-serif;
+
+}
+
+/* The stylesheet is styling the navbar here. */
+
+.navbar{
+
+    box-shadow:0 2px 10px rgba(0,0,0,0.15);
+
+}
+
+.navbar-brand{
+
+    font-size:24px;
+
+    font-weight:bold;
+
+}
+
+.nav-link{
+
+    font-size:16px;
+
+    font-weight:500;
+
+}
+
+.nav-link:hover{
+
+    color:#ffd54f !important;
+
+}
+
+/* The stylesheet is styling the hero section here. */
+
+.display-5{
+
+    color:#198754;
+
+}
+
+.lead{
+
+    color:#555;
+
+}
+
+/* The stylesheet is styling the cards here. */
+
+.card{
+
+    border:none;
+
+    border-radius:15px;
+
+    transition:0.3s;
+
+}
+
+.card:hover{
+
+    transform:translateY(-5px);
+
+    box-shadow:0 10px 25px rgba(0,0,0,0.2);
+
+}
+
+/* The stylesheet is styling the buttons here. */
+
+.btn{
+
+    border-radius:8px;
+
+    padding:10px 20px;
+
+}
+
+.btn-success{
+
+    background:#198754;
+
+}
+
+.btn-success:hover{
+
+    background:#146c43;
+
+}
+
+/* The stylesheet is styling the tables here. */
+
+table{
+
+    font-size:15px;
+
+}
+
+thead{
+
+    background:#198754;
+
+    color:white;
+
+}
+
+/* The stylesheet is styling the footer here. */
+
+footer{
+
+    margin-top:60px;
+
+    font-size:15px;
+
+}
+
+/* The stylesheet is styling the forms here. */
+
+.form-control{
+
+    border-radius:10px;
+
+}
+
+.form-control:focus{
+
+    border-color:#198754;
+
+    box-shadow:0 0 8px rgba(25,135,84,.4);
+
+}
+
+/* The stylesheet is styling the dashboard charts here. */
+
+.card-header{
+
+    font-weight:bold;
+
+    font-size:18px;
+
+}
+
+#pm25Chart,
+#pm10Chart,
+#tempChart{
+
+    width:100%;
+
+    height:450px;
+
+}
+
+/* The stylesheet is styling the result view here. */
+
+.display-3{
+
+    font-weight:bold;
+
+}
+
+/* The stylesheet is adjusting the layout for smaller screens here. */
+
+@media(max-width:768px){
+
+.display-5{
+
+font-size:35px;
+
+}
+
+.card{
+
+margin-bottom:20px;
+
+}
+
+}
+html,
+body {
+    min-height: 100%;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+footer {
+    margin-top: auto;
+}
+
+.plotly-chart {
+    width: 100%;
+    min-height: 320px;
+}

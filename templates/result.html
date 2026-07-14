@@ -1,0 +1,115 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction Result | Air Quality Prediction System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<!-- The page is showing the prediction result here. -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-success">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/">Air Quality Prediction</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="/prediction">Prediction</a></li>
+                <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="/history">History</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- The page is presenting the predicted value and status here. -->
+<div class="container py-5">
+    <div class="text-center mb-4">
+        <h1 class="fw-bold text-success">Prediction Result</h1>
+    </div>
+
+    <div class="row g-4 align-items-stretch">
+        <div class="col-lg-8">
+            <div class="card shadow h-100">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">Predicted PM2.5</h3>
+                </div>
+                <div class="card-body text-center">
+                    <h1 class="display-4 text-success mb-2">{{ prediction }}</h1>
+                    <p class="mb-3">µg/m³</p>
+                    <div class="alert alert-info mb-0">
+                        <strong>Air Quality Status:</strong> {{ air_quality_status }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card shadow h-100">
+                <div class="card-header {{ status_display.header_class }}">
+                    <h3 class="mb-0">Air Quality Check</h3>
+                </div>
+                <div class="card-body text-center d-flex flex-column justify-content-center">
+                    <div class="display-1 mb-3">{{ status_display.icon }}</div>
+                    <h2 class="fw-bold mb-2">{{ status_display.label }}</h2>
+                    <p class="mb-0">{{ status_display.message }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if show_air_quality_alert %}
+    <div class="alert alert-success alert-dismissible fade show mt-4" role="alert">
+        <strong>Air quality is within the safe threshold.</strong>
+        The predicted PM2.5 level is below the alert limit at {{ prediction }} µg/m³.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+
+    <div class="card shadow mt-4">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">Input Parameters</h3>
+        </div>
+        <div class="card-body table-responsive">
+            <table class="table table-bordered mb-0">
+                <tbody>
+                <tr><th>PM10</th><td>{{ input_data.PM10 }}</td></tr>
+                <tr><th>SO2</th><td>{{ input_data.SO2 }}</td></tr>
+                <tr><th>NO2</th><td>{{ input_data.NO2 }}</td></tr>
+                <tr><th>CO</th><td>{{ input_data.CO }}</td></tr>
+                <tr><th>O3</th><td>{{ input_data.O3 }}</td></tr>
+                <tr><th>TEMP</th><td>{{ input_data.TEMP }}</td></tr>
+                <tr><th>PRES</th><td>{{ input_data.PRES }}</td></tr>
+                <tr><th>DEWP</th><td>{{ input_data.DEWP }}</td></tr>
+                <tr><th>RAIN</th><td>{{ input_data.RAIN }}</td></tr>
+                <tr><th>WSPM</th><td>{{ input_data.WSPM }}</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="/prediction" class="btn btn-success me-2">Predict Again</a>
+        <a href="/history" class="btn btn-warning me-2">View History</a>
+        <a href="/dashboard" class="btn btn-primary">Dashboard</a>
+    </div>
+</div>
+
+<footer class="bg-dark text-white text-center py-3">
+    &copy; 2026 Air Quality Prediction System
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+{% if show_air_quality_alert %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        showSafeAirQualityPopup("Air quality is within the safe threshold. Predicted PM2.5 is {{ prediction }} µg/m³.");
+    });
+</script>
+{% endif %}
+</body>
+</html>

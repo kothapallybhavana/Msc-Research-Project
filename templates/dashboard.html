@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Air Quality Prediction System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+<!-- The page is displaying the dashboard sections and charts here. -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-success">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/">Air Quality Prediction</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="/prediction">Prediction</a></li>
+                <li class="nav-item"><a class="nav-link active" href="/dashboard">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="/history">History</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container py-5">
+    <div class="text-center mb-4">
+        <h1 class="fw-bold text-success">Air Quality Dashboard</h1>
+    </div>
+
+    <!-- The page is showing the dataset summary cards here. -->
+    <h3 class="mb-3">Dataset Summary</h3>
+    <div class="row g-3">
+        <div class="col-md-4"><div class="card shadow h-100"><div class="card-body text-center"><h6>Total Records</h6><h2 class="text-success">{{ summary.total_records }}</h2></div></div></div>
+        <div class="col-md-4"><div class="card shadow h-100"><div class="card-body text-center"><h6>Average PM2.5</h6><h2 class="text-success">{{ summary.avg_pm25 }}</h2></div></div></div>
+        <div class="col-md-4"><div class="card shadow h-100"><div class="card-body text-center"><h6>Average PM10</h6><h2 class="text-success">{{ summary.avg_pm10 }}</h2></div></div></div>
+    </div>
+
+    <!-- The page is showing the aggregate statistics tables here. -->
+    <div class="row mt-4 g-4">
+        <div class="col-lg-6">
+            <div class="card shadow h-100">
+                <div class="card-header bg-success text-white">Pollution Statistics</div>
+                <div class="card-body table-responsive">
+                    <table class="table table-bordered mb-0">
+                        <thead class="table-light">
+                        <tr><th>Pollutant</th><th>Average</th></tr>
+                        </thead>
+                        <tbody>
+                        {% for item in pollution_statistics %}
+                        <tr><td>{{ item.pollutant }}</td><td>{{ item.average_value }}</td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow h-100">
+                <div class="card-header bg-success text-white">Environmental Statistics</div>
+                <div class="card-body table-responsive">
+                    <table class="table table-bordered mb-0">
+                        <thead class="table-light">
+                        <tr><th>Metric</th><th>Average</th></tr>
+                        </thead>
+                        <tbody>
+                        {% for item in environmental_statistics %}
+                        <tr><td>{{ item.metric }}</td><td>{{ item.average_value }}</td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- The page is showing the parameter reading charts here. -->
+    {% if parameter_charts|length > 0 %}
+    <h3 class="mt-5 mb-3">Parameter Readings</h3>
+    <div class="row g-4">
+        {% for chart in parameter_charts %}
+        <div class="col-12">
+            <div class="card shadow h-100">
+                <div class="card-header bg-primary text-white">{{ chart.name }}</div>
+                <div class="card-body">
+                    <div class="row g-3 align-items-start">
+                        <div class="col-lg-9">
+                            <div id="{{ chart.id }}" class="plotly-chart"></div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="bg-light border rounded p-3 h-100">
+                                <h6 class="text-primary mb-2">Statistics</h6>
+                                <ul class="list-unstyled small mb-0">
+                                    <li><strong>Records:</strong> {{ chart.stats.records }}</li>
+                                    <li><strong>Average:</strong> {{ chart.stats.average }}</li>
+                                    <li><strong>Highest:</strong> {{ chart.stats.highest }} at No {{ chart.stats.highest_no }}</li>
+                                    <li><strong>Lowest:</strong> {{ chart.stats.lowest }} at No {{ chart.stats.lowest_no }}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- The page is showing the proposal charts here. -->
+    {% if show_historical_pm25 or show_pm10_trend or show_average_pollutants or show_station_distribution or show_monthly_pm25 or show_top_pm25 %}
+    <h3 class="mt-5 mb-3">Charts</h3>
+    <div class="row g-4">
+        {% if show_historical_pm25 and historical_pm25_chart %}
+        <div class="col-12">
+            <div class="card shadow h-100">
+                <div class="card-header bg-primary text-white">{{ historical_pm25_chart.name }}</div>
+                <div class="card-body">
+                    <div class="row g-3 align-items-start">
+                        <div class="col-lg-9">
+                            {{ graph_historical_pm25 | safe }}
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="bg-light border rounded p-3 h-100">
+                                <h6 class="text-primary mb-2">Statistics</h6>
+                                <p class="small mb-3">{{ historical_pm25_chart.description }}</p>
+                                <ul class="list-unstyled small mb-0">
+                                    <li><strong>Records:</strong> {{ historical_pm25_chart.stats.records }}</li>
+                                    <li><strong>Average:</strong> {{ historical_pm25_chart.stats.average }}</li>
+                                    <li><strong>Highest:</strong> {{ historical_pm25_chart.stats.highest }} on {{ historical_pm25_chart.stats.highest_label }}</li>
+                                    <li><strong>Lowest:</strong> {{ historical_pm25_chart.stats.lowest }} on {{ historical_pm25_chart.stats.lowest_label }}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% if show_pm10_trend and pm10_trend_chart %}
+        <div class="col-12">
+            <div class="card shadow h-100">
+                <div class="card-header bg-primary text-white">{{ pm10_trend_chart.name }}</div>
+                <div class="card-body">
+                    <div class="row g-3 align-items-start">
+                        <div class="col-lg-9">
+                            {{ graph_pm10_trend | safe }}
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="bg-light border rounded p-3 h-100">
+                                <h6 class="text-primary mb-2">Statistics</h6>
+                                <ul class="list-unstyled small mb-0">
+                                    <li><strong>Records:</strong> {{ pm10_trend_chart.stats.records }}</li>
+                                    <li><strong>Average:</strong> {{ pm10_trend_chart.stats.average }}</li>
+                                    <li><strong>Highest:</strong> {{ pm10_trend_chart.stats.highest }} on {{ pm10_trend_chart.stats.highest_label }}</li>
+                                    <li><strong>Lowest:</strong> {{ pm10_trend_chart.stats.lowest }} on {{ pm10_trend_chart.stats.lowest_label }}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% if show_average_pollutants and average_pollutants_chart %}
+        <div class="col-12">
+            <div class="card shadow h-100">
+                <div class="card-header bg-primary text-white">{{ average_pollutants_chart.name }}</div>
+                <div class="card-body">
+                    <div class="row g-3 align-items-start">
+                        <div class="col-lg-9">
+                            {{ graph_average_pollutants | safe }}
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="bg-light border rounded p-3 h-100">
+                                <h6 class="text-primary mb-2">Statistics</h6>
+                                <ul class="list-unstyled small mb-0">
+                                    <li><strong>Records:</strong> {{ average_pollutants_chart.stats.records }}</li>
+                                    <li><strong>Average:</strong> {{ average_pollutants_chart.stats.average }}</li>
+                                    <li><strong>Highest:</strong> {{ average_pollutants_chart.stats.highest }} for {{ average_pollutants_chart.stats.highest_label }}</li>
+                                    <li><strong>Lowest:</strong> {{ average_pollutants_chart.stats.lowest }} for {{ average_pollutants_chart.stats.lowest_label }}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% if show_station_distribution and station_distribution_chart %}
+        <div class="col-12">
+            <div class="card shadow h-100">
+                <div class="card-header bg-primary text-white">{{ station_distribution_chart.name }}</div>
+                <div class="card-body">
+                    <div class="row g-3 align-items-start">
+                        <div class="col-lg-9">
+                            {{ graph_station_distribution | safe }}
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="bg-light border rounded p-3 h-100">
+                                <h6 class="text-primary mb-2">Statistics</h6>
+                                <ul class="list-unstyled small mb-0">
+                                    <li><strong>Records:</strong> {{ station_distribution_chart.stats.records }}</li>
+                                    <li><strong>Average:</strong> {{ station_distribution_chart.stats.average }}</li>
+                                    <li><strong>Highest:</strong> {{ station_distribution_chart.stats.highest }} for {{ station_distribution_chart.stats.highest_label }}</li>
+                                    <li><strong>Lowest:</strong> {{ station_distribution_chart.stats.lowest }} for {{ station_distribution_chart.stats.lowest_label }}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% if show_monthly_pm25 and monthly_pm25_chart %}
+        <div class="col-12">
+            <div class="card shadow h-100">
+                <div class="card-header bg-primary text-white">{{ monthly_pm25_chart.name }}</div>
+                <div class="card-body">
+                    <div class="row g-3 align-items-start">
+                        <div class="col-lg-9">
+                            {{ graph_monthly_pm25 | safe }}
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="bg-light border rounded p-3 h-100">
+                                <h6 class="text-primary mb-2">Statistics</h6>
+                                <ul class="list-unstyled small mb-0">
+                                    <li><strong>Records:</strong> {{ monthly_pm25_chart.stats.records }}</li>
+                                    <li><strong>Average:</strong> {{ monthly_pm25_chart.stats.average }}</li>
+                                    <li><strong>Highest:</strong> {{ monthly_pm25_chart.stats.highest }} in month {{ monthly_pm25_chart.stats.highest_month }}</li>
+                                    <li><strong>Lowest:</strong> {{ monthly_pm25_chart.stats.lowest }} in month {{ monthly_pm25_chart.stats.lowest_month }}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% if show_top_pm25 and top_pm25_chart %}
+        <div class="col-12">
+            <div class="card shadow h-100">
+                <div class="card-header bg-primary text-white">{{ top_pm25_chart.name }}</div>
+                <div class="card-body">
+                    <div class="row g-3 align-items-start">
+                        <div class="col-lg-9">
+                            {{ graph_top_pm25 | safe }}
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="bg-light border rounded p-3 h-100">
+                                <h6 class="text-primary mb-2">Statistics</h6>
+                                <ul class="list-unstyled small mb-0">
+                                    <li><strong>Records:</strong> {{ top_pm25_chart.stats.records }}</li>
+                                    <li><strong>Average:</strong> {{ top_pm25_chart.stats.average }}</li>
+                                    <li><strong>Highest:</strong> {{ top_pm25_chart.stats.highest }} at No {{ top_pm25_chart.stats.highest_no }}</li>
+                                    <li><strong>Lowest:</strong> {{ top_pm25_chart.stats.lowest }} at No {{ top_pm25_chart.stats.lowest_no }}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- The page is summarizing the dashboard charts in a report section here. -->
+    <div class="card shadow mt-5" id="dashboard-report-card">
+        <div class="card-header bg-dark text-white">Dashboard Report</div>
+        <div class="card-body">
+            <p class="mb-4" id="dashboard-report-summary">This report is summarizing what each chart is showing so the dashboard can be understood quickly.</p>
+            <div class="row g-3" id="dashboard-report-grid">
+                <div class="col-lg-6">
+                    <div class="border rounded p-3 h-100">
+                        <h6 class="text-success">Dataset Summary</h6>
+                        <p class="small mb-0" id="report-dataset-summary">This section is showing total records, total stations, and the average PM2.5 and PM10 values stored in the database.</p>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="border rounded p-3 h-100">
+                        <h6 class="text-success">Pollution Statistics</h6>
+                        <p class="small mb-0" id="report-pollution-summary">This table is showing the average pollutant levels for PM2.5, PM10, SO2, NO2, CO, and O3.</p>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="border rounded p-3 h-100">
+                        <h6 class="text-success">Environmental Statistics</h6>
+                        <p class="small mb-0" id="report-environment-summary">This table is showing the average environmental readings for temperature, pressure, dew point, rain, and wind speed.</p>
+                    </div>
+                </div>
+                {% for chart in parameter_charts %}
+                <div class="col-lg-6">
+                    <div class="border rounded p-3 h-100">
+                        <h6 class="text-primary">{{ chart.name }}</h6>
+                        <p class="small mb-2">{{ chart.description }}</p>
+                        <p class="small mb-0">This chart is showing {{ chart.name.lower() }} readings across the imported records, with the highest reading at {{ chart.stats.highest }} and the lowest reading at {{ chart.stats.lowest }}.</p>
+                    </div>
+                </div>
+                {% endfor %}
+                {% if historical_pm25_chart %}
+                <div class="col-lg-6">
+                    <div class="border rounded p-3 h-100">
+                        <h6 class="text-primary">{{ historical_pm25_chart.name }}</h6>
+                        <p class="small mb-2">{{ historical_pm25_chart.description }}</p>
+                        <p class="small mb-0">This chart is showing the PM2.5 trend over time, and it is helping identify periods of higher and lower pollution.</p>
+                    </div>
+                </div>
+                {% endif %}
+                {% if pm10_trend_chart %}
+                <div class="col-lg-6">
+                    <div class="border rounded p-3 h-100">
+                        <h6 class="text-primary">{{ pm10_trend_chart.name }}</h6>
+                        <p class="small mb-2">{{ pm10_trend_chart.description }}</p>
+                        <p class="small mb-0">This chart is showing the PM10 trend over time, and it is helping compare changes with the PM2.5 pattern.</p>
+                    </div>
+                </div>
+                {% endif %}
+                {% if average_pollutants_chart %}
+                <div class="col-lg-6">
+                    <div class="border rounded p-3 h-100">
+                        <h6 class="text-primary">{{ average_pollutants_chart.name }}</h6>
+                        <p class="small mb-2">{{ average_pollutants_chart.description }}</p>
+                        <p class="small mb-0">This chart is showing which pollutant has the highest average level across the stored records.</p>
+                    </div>
+                </div>
+                {% endif %}
+                {% if station_distribution_chart %}
+                <div class="col-lg-6">
+                    <div class="border rounded p-3 h-100">
+                        <h6 class="text-primary">{{ station_distribution_chart.name }}</h6>
+                        <p class="small mb-2">{{ station_distribution_chart.description }}</p>
+                        <p class="small mb-0">This chart is showing how records are distributed across stations, which is helping confirm dataset coverage.</p>
+                    </div>
+                </div>
+                {% endif %}
+                {% if monthly_pm25_chart %}
+                <div class="col-lg-6">
+                    <div class="border rounded p-3 h-100">
+                        <h6 class="text-primary">{{ monthly_pm25_chart.name }}</h6>
+                        <p class="small mb-2">{{ monthly_pm25_chart.description }}</p>
+                        <p class="small mb-0">This chart is showing which month has the highest and lowest PM2.5 average in the database.</p>
+                    </div>
+                </div>
+                {% endif %}
+                {% if top_pm25_chart %}
+                <div class="col-lg-6">
+                    <div class="border rounded p-3 h-100">
+                        <h6 class="text-primary">{{ top_pm25_chart.name }}</h6>
+                        <p class="small mb-2">{{ top_pm25_chart.description }}</p>
+                        <p class="small mb-0">This chart is showing the strongest PM2.5 readings so the highest pollution points can be identified quickly.</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="bg-dark text-white text-center py-3">
+    &copy; 2026 Air Quality Prediction System
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Displaying the parameter charts after the page is finishing loading.
+    const parameterCharts = {{ parameter_charts | tojson }};
+    const reportRefreshUrl = "{{ url_for('dashboard.dashboard_report_data') }}";
+
+    function updateReportSection(reportData) {
+        const reportSummary = document.getElementById("dashboard-report-summary");
+        const datasetSummary = document.getElementById("report-dataset-summary");
+        const pollutionSummary = document.getElementById("report-pollution-summary");
+        const environmentSummary = document.getElementById("report-environment-summary");
+
+        if (reportSummary && reportData) {
+            reportSummary.textContent = `This report is summarizing the latest database values at ${new Date().toLocaleString()}.`;
+        }
+        if (datasetSummary && reportData.summary) {
+            datasetSummary.textContent = `This section is showing ${reportData.summary.total_records} records, with average PM2.5 at ${reportData.summary.avg_pm25} and average PM10 at ${reportData.summary.avg_pm10}.`;
+        }
+        if (pollutionSummary && reportData.pollution_statistics) {
+            pollutionSummary.textContent = "This table is showing the latest average pollutant levels for PM2.5, PM10, SO2, NO2, CO, and O3 from the database.";
+        }
+        if (environmentSummary && reportData.environmental_statistics) {
+            environmentSummary.textContent = "This table is showing the latest average environmental readings for temperature, pressure, dew point, rain, and wind speed from the database.";
+        }
+    }
+
+    async function refreshDashboardReport() {
+        try {
+            const response = await fetch(reportRefreshUrl, { cache: "no-store" });
+            if (!response.ok) {
+                return;
+            }
+            const reportData = await response.json();
+            updateReportSection(reportData);
+        } catch (error) {
+            console.warn("Dashboard report refresh failed:", error);
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        parameterCharts.forEach(function (chart) {
+            Plotly.newPlot(chart.id, chart.figure.data, chart.figure.layout, {responsive: true});
+        });
+        refreshDashboardReport();
+        setInterval(refreshDashboardReport, 15000);
+    });
+</script>
+</body>
+</html>

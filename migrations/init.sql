@@ -1,0 +1,42 @@
+CREATE DATABASE IF NOT EXISTS air_quality_db;
+USE air_quality_db;
+
+CREATE TABLE IF NOT EXISTS air_quality (
+    No INT PRIMARY KEY,
+    year SMALLINT NOT NULL,
+    month TINYINT NOT NULL,
+    day TINYINT NOT NULL,
+    hour TINYINT NOT NULL,
+    PM25 FLOAT,
+    PM10 FLOAT,
+    SO2 FLOAT,
+    NO2 FLOAT,
+    CO FLOAT,
+    O3 FLOAT,
+    TEMP FLOAT,
+    PRES FLOAT,
+    DEWP FLOAT,
+    RAIN FLOAT,
+    wd VARCHAR(10),
+    WSPM FLOAT,
+    station VARCHAR(50)
+);
+
+CREATE TABLE IF NOT EXISTS prediction_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    prediction_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    PM10 FLOAT,
+    SO2 FLOAT,
+    NO2 FLOAT,
+    CO FLOAT,
+    O3 FLOAT,
+    TEMP FLOAT,
+    PRES FLOAT,
+    DEWP FLOAT,
+    RAIN FLOAT,
+    WSPM FLOAT,
+
+    predicted_pm25 FLOAT,
+    air_quality_status VARCHAR(50)
+);
